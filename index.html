@@ -17,8 +17,8 @@
     /* Floating Toggle Button */
     #toggle-settings-btn {
       position: fixed;
-      top: 10px;
-      left: 10px;
+      top: 12px;
+      left: 12px;
       z-index: 1000;
       background: #008CBA;
       color: white;
@@ -42,7 +42,7 @@
     #controls-panel {
       width: 340px;
       background-color: #1E1E1E;
-      padding: 50px 15px 20px 15px;
+      padding: 60px 15px 20px 15px; /* Padding oben vergrößert für Toggle-Button Platz */
       box-shadow: 2px 0 10px rgba(0,0,0,0.5);
       transition: margin-left 0.3s ease;
       flex-shrink: 0;
@@ -340,10 +340,10 @@
         <h3>Impressum</h3>
         <p>Angaben gemäß § 5 DDG:</p>
         <p>
-          [Dein Name / Name des Betreibers]<br>
+          [Name des Betreibers]<br>
           [Straße & Hausnummer]<br>
           [PLZ & Ort]<br>
-          E-Mail: [Deine E-Mail-Adresse]
+          E-Mail: [E-Mail-Adresse]
         </p>
         <p><i>Hinweis: Dieses Projekt wird als Open-Source-Anwendung auf GitHub Pages bereitgestellt.</i></p>
       </div>
@@ -373,7 +373,7 @@
       speed = { start: 0.6, decrement: 0.005, min: 0.1 },
       nx = 32, ny = 18, nu = 5, blockSize = 25;
 
-  var dx, dy, blocks, actions, playing, paused = false, dt, current, next, score, vscore, rows, step;
+  var dx, dy, blocks, actions, playing = false, paused = false, dt, current, next, score, vscore, rows, step;
   var sessionStartTime = null, timerInterval = null;
 
   var blockColors = { falling: "#FF0000", set: "#00FFFF" };
@@ -491,8 +491,8 @@
       switch(ev.keyCode) {
         case KEY.LEFT:  actions.push(DIR.LEFT);  handled = true; break;
         case KEY.RIGHT: actions.push(DIR.RIGHT); handled = true; break;
-        case KEY.UP:    actions.push(DIR.UP);    handled = true; break;
-        case KEY.DOWN:  actions.push(DIR.DOWN);  handled = true; break;
+        case KEY.UP:    rotate();                handled = true; break;
+        case KEY.DOWN:  drop();                  handled = true; break;
         case KEY.ESC:   lose();                  handled = true; break;
       }
     } else if (ev.keyCode == KEY.SPACE && !paused) {
@@ -511,13 +511,13 @@
         if (elapsed >= 15) {
           get('timer-warning').style.display = 'block';
         }
-      }, 30000); // alle 30s prüfen
+      }, 30000);
     }
   }
 
   function play() { 
     if (get('auto-swap').checked && playing === false) {
-      flipColors(); // Automatische Rotation der Farbkanäle bei Neustart
+      flipColors();
     }
     get('start-msg').style.display = 'none'; 
     reset(); 
@@ -733,7 +733,6 @@
       if (event.target == modalImpressum) modalImpressum.style.display = "none";
     };
   }
-
 
   run();
 </script>
