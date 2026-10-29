@@ -1,47 +1,73 @@
 <!DOCTYPE html> 
 <html>
 <head>
-  <title>Dichoptic Tetris - Vision Therapy Edition</title>
+  <title>Dichoptic Tetris - Vision Therapy Widescreen Edition</title>
   <meta charset="utf-8">
   <style>
+    * { box-sizing: border-box; }
     body { 
       font-family: Arial, sans-serif; 
       background-color: #121212; 
       color: #EEE; 
       margin: 0; 
-      padding: 10px;
+      padding: 0;
+      overflow-x: hidden;
     }
 
-    #container {
+    /* Floating Toggle Button */
+    #toggle-settings-btn {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      z-index: 1000;
+      background: #008CBA;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+    }
+    #toggle-settings-btn:hover { background: #007399; }
+
+    /* Main Layout */
+    #main-wrapper {
       display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 20px;
-      max-width: 1200px;
-      margin: 0 auto;
+      width: 100vw;
+      min-height: 100vh;
     }
 
-    #game-container {
+    /* Collapsible Sidebar */
+    #controls-panel {
+      width: 320px;
       background-color: #1E1E1E;
-      padding: 15px;
-      border-radius: 10px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-      text-align: center;
+      padding: 50px 15px 15px 15px;
+      box-shadow: 2px 0 10px rgba(0,0,0,0.5);
+      transition: margin-left 0.3s ease;
+      flex-shrink: 0;
+      z-index: 900;
+    }
+
+    #controls-panel.collapsed {
+      margin-left: -320px;
+    }
+
+    /* Canvas Area takes full remaining width */
+    #game-container {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
     }
 
     #canvas { 
       background: #000000; 
       border: 2px solid #444; 
-      display: block;
-      margin: 10px auto;
-    }
-
-    #controls-panel {
-      background-color: #2A2A2A;
-      padding: 15px;
-      border-radius: 10px;
-      width: 280px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      box-shadow: 0 0 20px rgba(0,0,0,0.8);
+      max-width: 100%;
     }
 
     h3 { margin-top: 0; color: #FFF; border-bottom: 1px solid #444; padding-bottom: 5px; }
@@ -53,9 +79,7 @@
       align-items: center;
     }
 
-    .setting-group label {
-      font-size: 0.85em;
-    }
+    .setting-group label { font-size: 0.85em; }
 
     .setting-group input[type="color"] {
       border: none;
@@ -65,16 +89,16 @@
       background: transparent;
     }
 
-    .setting-group input[type="number"], .setting-group select {
-      width: 60px;
+    .setting-group input[type="number"] {
+      width: 70px;
       background: #333;
       color: #fff;
       border: 1px solid #555;
-      padding: 3px;
+      padding: 4px;
       border-radius: 3px;
     }
 
-    button {
+    button.panel-btn {
       width: 100%;
       padding: 8px;
       margin-top: 5px;
@@ -85,13 +109,13 @@
       cursor: pointer;
       font-weight: bold;
     }
-
-    button:hover { background-color: #007399; }
+    button.panel-btn:hover { background-color: #007399; }
 
     #stats-box {
       display: flex;
-      justify-content: space-around;
-      margin-top: 10px;
+      gap: 30px;
+      margin-top: 15px;
+      font-size: 1.2em;
       font-weight: bold;
     }
 
@@ -101,20 +125,11 @@
 
 <body> 
 
-<div id="container">
+<button id="toggle-settings-btn">⚙️ Settings Ein/Aus</button>
 
-  <!-- Spielbereich -->
-  <div id="game-container">
-    <div id="start-msg"><strong>Press SPACE or 'Start' to Play</strong></div>
-    <canvas id="canvas"></canvas>
-    
-    <div id="stats-box">
-      <div>Score: <span id="score" style="color: #00FFFF;">00000</span></div>
-      <div>Rows: <span id="rows" style="color: #00FFFF;">0</span></div>
-    </div>
-  </div>
+<div id="main-wrapper">
 
-  <!-- Einstellungen / Settings -->
+  <!-- Einklappbare Seitenleiste -->
   <div id="controls-panel">
     <h3>Therapie Settings</h3>
 
@@ -128,23 +143,23 @@
       <input type="color" id="color-set" value="#00FFFF">
     </div>
 
-    <button id="flip-btn">Farben Tauschen ⇄</button>
+    <button class="panel-btn" id="flip-btn">Farben Tauschen ⇄</button>
 
     <hr style="border-color: #444; margin: 15px 0;">
 
     <div class="setting-group">
-      <label for="grid-nx">Breite (Spalten):</label>
-      <input type="number" id="grid-nx" min="8" max="30" value="16">
+      <label for="grid-nx">Breite (Spalten, max 80):</label>
+      <input type="number" id="grid-nx" min="8" max="80" value="32">
     </div>
 
     <div class="setting-group">
-      <label for="grid-ny">Höhe (Zeilen):</label>
-      <input type="number" id="grid-ny" min="10" max="30" value="20">
+      <label for="grid-ny">Höhe (Zeilen, max 50):</label>
+      <input type="number" id="grid-ny" min="10" max="50" value="18">
     </div>
 
     <div class="setting-group">
       <label for="block-size">Blockgröße (px):</label>
-      <input type="number" id="block-size" min="15" max="50" value="25">
+      <input type="number" id="block-size" min="10" max="60" value="25">
     </div>
 
     <div class="setting-group">
@@ -152,12 +167,23 @@
       <input type="number" id="start-speed" step="0.1" min="0.1" max="2.0" value="0.6">
     </div>
 
-    <button id="apply-btn">Einstellungen Anwenden</button>
-    <button id="play-btn" style="background-color: #4CAF50; margin-top: 10px;">Start / Restart</button>
+    <button class="panel-btn" id="apply-btn">Übernehmen</button>
+    <button class="panel-btn" id="play-btn" style="background-color: #4CAF50; margin-top: 10px;">Start / Restart</button>
 
     <div style="margin-top: 15px; text-align: center;">
       <label style="font-size: 0.8em;">Nächster Stein:</label><br>
       <canvas id="upcoming" width="80" height="80"></canvas>
+    </div>
+  </div>
+
+  <!-- Vollbild-Spielfeld -->
+  <div id="game-container">
+    <div id="start-msg" style="margin-bottom: 10px;"><strong>Drücke LEERTASTE oder 'Start'</strong></div>
+    <canvas id="canvas"></canvas>
+    
+    <div id="stats-box">
+      <div>Score: <span id="score" style="color: #00FFFF;">00000</span></div>
+      <div>Rows: <span id="rows" style="color: #00FFFF;">0</span></div>
     </div>
   </div>
 
@@ -181,14 +207,11 @@
       canvas = get('canvas'), ctx = canvas.getContext('2d'),
       ucanvas = get('upcoming'), uctx = ucanvas.getContext('2d'),
       speed = { start: 0.6, decrement: 0.005, min: 0.1 },
-      nx = 16, ny = 20, nu = 5, blockSize = 25;
+      nx = 32, ny = 18, nu = 5, blockSize = 25;
 
   var dx, dy, blocks, actions, playing, dt, current, next, score, vscore, rows, step;
 
-  var blockColors = {
-    falling: "#FF0000",
-    set: "#00FFFF"
-  };
+  var blockColors = { falling: "#FF0000", set: "#00FFFF" };
 
   var types = [
     { id: 'i', size: 4, blocks: [0x0F00, 0x2222, 0x00F0, 0x4444]},
@@ -201,7 +224,7 @@
   ];
 
   function eachblock(type, x, y, dir, fn) {
-    var bit, result, row = 0, col = 0, blocks = type.blocks[dir];
+    var bit, row = 0, col = 0, blocks = type.blocks[dir];
     for(bit = 0x8000 ; bit > 0 ; bit = bit >> 1) {
       if (blocks & bit) { fn(x + col, y + row); }
       if (++col === 4) { col = 0; ++row; }
@@ -243,6 +266,9 @@
 
   function addEvents() {
     document.addEventListener('keydown', keydown, false);
+    get('toggle-settings-btn').addEventListener('click', function() {
+      get('controls-panel').classList.toggle('collapsed');
+    });
     get('flip-btn').addEventListener('click', function() {
       var tmp = blockColors.falling;
       blockColors.falling = blockColors.set;
@@ -256,8 +282,8 @@
   }
 
   function applySettings() {
-    nx = parseInt(get('grid-nx').value) || 16;
-    ny = parseInt(get('grid-ny').value) || 20;
+    nx = parseInt(get('grid-nx').value) || 32;
+    ny = parseInt(get('grid-ny').value) || 18;
     blockSize = parseInt(get('block-size').value) || 25;
     speed.start = parseFloat(get('start-speed').value) || 0.6;
     
