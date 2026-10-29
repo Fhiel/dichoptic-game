@@ -7,6 +7,12 @@ Eine erweiterte HTML5-Tetris-Anwendung für **dichoptisches Seh- und Fusionstrai
 
 ---
 
+## Haftungsausschluss / Disclaimer
+
+**Wichtiger Hinweis:** Diese Software ist kein zertifiziertes Medizinprodukt und ersetzt keine ärztliche Behandlung oder Sehtherapie durch Fachpersonal (Augenarzt/Orthoptist). Das Programm dient ausschließlich als unterstützendes Open-Source-Übungstool auf eigene Verantwortung.
+
+---
+
 ## Features & Therapie-Funktionen
 
 * **Dichoptische Kanaltrennung:** Fällende Steine und bereits abgelegte Blöcke werden in unterschiedlichen Farben gerendert. Zusammen mit einer Anaglyphenbrille (z. B. Rot/Cyan) wird das Gehirn gezwungen, die Signale beider Augen simultan im visuellen Kortex zu verarbeiten.

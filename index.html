@@ -167,6 +167,54 @@
     }
 
     #upcoming { background: #000; border: 1px solid #444; }
+
+    /* Footer & Legal Modal */
+    footer.legal-footer {
+      margin-top: 20px;
+      font-size: 0.75em;
+      color: #888;
+      text-align: center;
+    }
+    footer.legal-footer a {
+      color: #008CBA;
+      text-decoration: none;
+      margin: 0 8px;
+    }
+    footer.legal-footer a:hover {
+      text-decoration: underline;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 2000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.8);
+    }
+    .modal-content {
+      background-color: #1E1E1E;
+      margin: 10% auto;
+      padding: 20px;
+      border: 1px solid #444;
+      border-radius: 8px;
+      width: 80%;
+      max-width: 600px;
+      color: #DDD;
+      font-size: 0.9em;
+      line-height: 1.5em;
+    }
+    .close-modal {
+      color: #AAA;
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .close-modal:hover { color: #FFF; }
+
   </style>
 </head> 
 
@@ -268,6 +316,39 @@
 
     <div id="start-msg" style="margin-bottom: 10px;"><strong>Drücke LEERTASTE oder 'Start'</strong></div>
     <canvas id="canvas"></canvas>
+
+    <!-- Footer Links -->
+    <footer class="legal-footer">
+      <a href="javascript:void(0)" id="open-disclaimer">Medizinischer Hinweis</a> | 
+      <a href="javascript:void(0)" id="open-impressum">Impressum</a>
+    </footer>
+
+    <!-- Modal Disclaimer -->
+    <div id="modal-disclaimer" class="modal">
+      <div class="modal-content">
+        <span class="close-modal">&times;</span>
+        <h3>⚠️ Medizinischer Haftungsausschluss</h3>
+        <p>Diese Anwendung dient ausschließlich zu Demonstrations-, Forschungs- und Übungszwecken im Rahmen des dichoptischen Sehtrainings.</p>
+        <p><strong>Wichtiger Hinweis:</strong> Diese Software ist kein zertifiziertes Medizinprodukt und ersetzt keinesfalls eine professionelle ärztliche Untersuchung, Diagnose oder Sehtherapie durch eine/n Augenarzt/Ärztin oder Orthoptist/in. Die Nutzung erfolgt auf eigene Verantwortung.</p>
+      </div>
+    </div>
+
+    <!-- Modal Impressum -->
+    <div id="modal-impressum" class="modal">
+      <div class="modal-content">
+        <span class="close-modal">&times;</span>
+        <h3>Impressum</h3>
+        <p>Angaben gemäß § 5 DDG:</p>
+        <p>
+          [Dein Name / Name des Betreibers]<br>
+          [Straße & Hausnummer]<br>
+          [PLZ & Ort]<br>
+          E-Mail: [Deine E-Mail-Adresse]
+        </p>
+        <p><i>Hinweis: Dieses Projekt wird als Open-Source-Anwendung auf GitHub Pages bereitgestellt.</i></p>
+      </div>
+    </div>
+
   </div>
 
 </div>
@@ -359,6 +440,7 @@
     get('apply-btn').addEventListener('click', applySettings);
     get('play-btn').addEventListener('click', play);
     get('pause-btn').addEventListener('click', togglePause);
+    setupModals();
   }
 
   function flipColors() {
@@ -629,6 +711,29 @@
     ctx.strokeStyle = '#000000';
     ctx.strokeRect(x*dx, y*dy, dx, dy);
   }
+
+  // Modal Steuerung
+  function setupModals() {
+    var modalDisclaimer = get('modal-disclaimer');
+    var modalImpressum = get('modal-impressum');
+
+    get('open-disclaimer').onclick = function() { modalDisclaimer.style.display = "block"; };
+    get('open-impressum').onclick = function() { modalImpressum.style.display = "block"; };
+
+    var closeBtns = document.getElementsByClassName('close-modal');
+    for (var i = 0; i < closeBtns.length; i++) {
+      closeBtns[i].onclick = function() {
+        modalDisclaimer.style.display = "none";
+        modalImpressum.style.display = "none";
+      };
+    }
+
+    window.onclick = function(event) {
+      if (event.target == modalDisclaimer) modalDisclaimer.style.display = "none";
+      if (event.target == modalImpressum) modalImpressum.style.display = "none";
+    };
+  }
+
 
   run();
 </script>
