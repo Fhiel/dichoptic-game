@@ -1,20 +1,21 @@
-<!DOCTYPE html> 
-<html>
+<!DOCTYPE html>
+<html lang="de">
 <head>
   <title>Dichoptic Tetris - Vision Therapy Widescreen Edition</title>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
   <style>
     * { box-sizing: border-box; }
-    body { 
-      font-family: Arial, sans-serif; 
-      background-color: #121212; 
-      color: #EEE; 
-      margin: 0; 
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #121212;
+      color: #EEE;
+      margin: 0;
       padding: 0;
       overflow-x: hidden;
+      -webkit-tap-highlight-color: transparent;
     }
 
-    /* Floating Toggle Button */
     #toggle-settings-btn {
       position: fixed;
       top: 12px;
@@ -31,18 +32,16 @@
     }
     #toggle-settings-btn:hover { background: #007399; }
 
-    /* Main Layout */
     #main-wrapper {
       display: flex;
       width: 100vw;
       min-height: 100vh;
     }
 
-    /* Collapsible Sidebar */
     #controls-panel {
       width: 340px;
       background-color: #1E1E1E;
-      padding: 60px 15px 20px 15px; /* Padding oben vergrößert für Toggle-Button Platz */
+      padding: 60px 15px 20px 15px;
       box-shadow: 2px 0 10px rgba(0,0,0,0.5);
       transition: margin-left 0.3s ease;
       flex-shrink: 0;
@@ -50,12 +49,8 @@
       overflow-y: auto;
       max-height: 100vh;
     }
+    #controls-panel.collapsed { margin-left: -340px; }
 
-    #controls-panel.collapsed {
-      margin-left: -340px;
-    }
-
-    /* Canvas Area takes full remaining width */
     #game-container {
       flex-grow: 1;
       display: flex;
@@ -66,7 +61,6 @@
       position: relative;
     }
 
-    /* Top Dashboard inside Game Area */
     #top-dashboard {
       display: flex;
       align-items: center;
@@ -78,15 +72,15 @@
       padding: 10px 20px;
       border-radius: 8px;
       border: 1px solid #333;
+      flex-wrap: wrap;
+      gap: 8px;
     }
-
     .dashboard-item {
       display: flex;
       flex-direction: column;
       align-items: center;
       font-weight: bold;
     }
-
     .dashboard-label {
       font-size: 0.8em;
       color: #AAA;
@@ -94,11 +88,32 @@
       text-transform: uppercase;
     }
 
-    #canvas { 
-      background: #000000; 
-      border: 2px solid #444; 
+    #canvas-wrap {
+      position: relative;
+      max-width: 100%;
+    }
+    #canvas {
+      background: #000000;
+      border: 2px solid #444;
       box-shadow: 0 0 20px rgba(0,0,0,0.8);
       max-width: 100%;
+      display: block;
+    }
+    #pause-overlay {
+      display: none;
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      color: #fff;
+      font-size: 1.4em;
+      font-weight: bold;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      border-radius: 2px;
+    }
+    #pause-overlay.visible {
+      display: flex;
     }
 
     h3 { margin-top: 0; color: #FFF; border-bottom: 1px solid #444; padding-bottom: 5px; }
@@ -109,9 +124,7 @@
       justify-content: space-between;
       align-items: center;
     }
-
     .setting-group label { font-size: 0.85em; }
-
     .setting-group input[type="color"] {
       border: none;
       width: 35px;
@@ -119,7 +132,6 @@
       cursor: pointer;
       background: transparent;
     }
-
     .setting-group input[type="number"] {
       width: 70px;
       background: #333;
@@ -142,7 +154,6 @@
     }
     button.panel-btn:hover { background-color: #007399; }
 
-    /* Guide Box inside Settings */
     .guide-box {
       background: #2A2A2A;
       border-left: 3px solid #008CBA;
@@ -159,16 +170,62 @@
       display: none;
       background: #ff9800;
       color: #000;
-      padding: 6px 12px;
+      padding: 8px 12px;
       border-radius: 4px;
       font-weight: bold;
       font-size: 0.85em;
       margin-bottom: 10px;
+      max-width: 900px;
+      width: 100%;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    #timer-warning.visible { display: flex; }
+    #timer-warning button {
+      background: #333;
+      color: #fff;
+      border: none;
+      padding: 4px 10px;
+      border-radius: 3px;
+      cursor: pointer;
+      font-weight: bold;
+      white-space: nowrap;
+    }
+
+    #session-time {
+      color: #AAA;
+      font-size: 0.9em;
     }
 
     #upcoming { background: #000; border: 1px solid #444; }
 
-    /* Footer & Legal Modal */
+    /* Touch controls */
+    #touch-controls {
+      display: none;
+      margin-top: 14px;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: center;
+      max-width: 360px;
+    }
+    #touch-controls.visible { display: flex; }
+    .touch-btn {
+      min-width: 64px;
+      min-height: 48px;
+      padding: 10px 14px;
+      font-size: 1.2em;
+      font-weight: bold;
+      background: #2A2A2A;
+      color: #EEE;
+      border: 1px solid #555;
+      border-radius: 8px;
+      cursor: pointer;
+      user-select: none;
+      touch-action: manipulation;
+    }
+    .touch-btn:active { background: #008CBA; }
+
     footer.legal-footer {
       margin-top: 20px;
       font-size: 0.75em;
@@ -180,18 +237,14 @@
       text-decoration: none;
       margin: 0 8px;
     }
-    footer.legal-footer a:hover {
-      text-decoration: underline;
-    }
+    footer.legal-footer a:hover { text-decoration: underline; }
 
     .modal {
       display: none;
       position: fixed;
       z-index: 2000;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
+      left: 0; top: 0;
+      width: 100%; height: 100%;
       background-color: rgba(0,0,0,0.8);
     }
     .modal-content {
@@ -215,33 +268,36 @@
     }
     .close-modal:hover { color: #FFF; }
 
+    @media (max-width: 700px) {
+      #controls-panel { width: 280px; }
+      #controls-panel.collapsed { margin-left: -280px; }
+      #touch-controls.visible { display: flex; }
+    }
   </style>
-</head> 
+</head>
+<body>
 
-<body> 
-
-<button id="toggle-settings-btn">⚙️ Settings Ein/Aus</button>
+<button id="toggle-settings-btn" type="button">⚙️ Settings Ein/Aus</button>
 
 <div id="main-wrapper">
 
-  <!-- Einklappbare Seitenleiste -->
   <div id="controls-panel">
     <h3>Therapie Settings</h3>
 
     <div class="setting-group">
-      <label for="color-falling">Fällender Stein (Auge 1):</label>
+      <label for="color-falling">Fällender Stein (Kanal A):</label>
       <input type="color" id="color-falling" value="#FF0000">
     </div>
 
     <div class="setting-group">
-      <label for="color-set">Liegende Steine (Auge 2):</label>
+      <label for="color-set">Liegende Steine (Kanal B):</label>
       <input type="color" id="color-set" value="#00FFFF">
     </div>
 
-    <button class="panel-btn" id="flip-btn">Farben Tauschen ⇄</button>
+    <button class="panel-btn" id="flip-btn" type="button">Farben Tauschen ⇄</button>
 
     <div class="setting-group" style="margin-top: 10px;">
-      <label for="auto-swap" style="font-size: 0.8em;">Auto-Farbtausch bei jedem Spiel:</label>
+      <label for="auto-swap" style="font-size: 0.8em;">Auto-Farbtausch bei neuem Spiel:</label>
       <input type="checkbox" id="auto-swap" checked>
     </div>
 
@@ -267,63 +323,76 @@
       <input type="number" id="start-speed" step="0.1" min="0.1" max="2.0" value="0.6">
     </div>
 
-    <button class="panel-btn" id="apply-btn">Übernehmen</button>
-    <button class="panel-btn" id="pause-btn" style="background-color: #ff9800; margin-top: 5px;">Pause (Taste P)</button>
-    <button class="panel-btn" id="play-btn" style="background-color: #4CAF50; margin-top: 5px;">Start / Restart</button>
+    <button class="panel-btn" id="apply-btn" type="button">Übernehmen</button>
+    <button class="panel-btn" id="pause-btn" type="button" style="background-color: #ff9800; margin-top: 5px;">Pause (P / Leertaste)</button>
+    <button class="panel-btn" id="play-btn" type="button" style="background-color: #4CAF50; margin-top: 5px;">Start / Restart</button>
+    <button class="panel-btn" id="reset-timer-btn" type="button" style="background-color: #555; margin-top: 5px;">Timer zurücksetzen</button>
 
-    <!-- Anleitung zur Brillen-Kalibrierung & Haltung -->
     <div class="guide-box">
       <h4>👓 Brillen-Kalibrierung</h4>
       <ol>
-        <li>Brille aufsetzen (z.B. Rot links, Cyan rechts).</li>
-        <li><strong>NUR durch ROTE Glas schauen:</strong> Fällender Stein sichtbar, liegende Steine <i>komplett unsichtbar</i>.</li>
-        <li><strong>NUR durch CYAN Glas schauen:</strong> Liegende Steine sichtbar, fällender Stein <i>unsichtbar</i>.</li>
-        <li>Passt es nicht? Farbe anpassen oder <strong>Display-Helligkeit</strong> ändern.</li>
+        <li>Anaglyphenbrille aufsetzen (z. B. Rot/Cyan).</li>
+        <li><strong>Nur durch ein Glas:</strong> Fällender Stein sichtbar, liegende Steine möglichst unsichtbar.</li>
+        <li><strong>Nur durch das andere Glas:</strong> Liegende Steine sichtbar, fällender Stein möglichst unsichtbar.</li>
+        <li>Passt es nicht? Farben anpassen, tauschen oder Display-Helligkeit ändern.</li>
       </ol>
     </div>
 
     <div class="guide-box" style="border-left-color: #4CAF50;">
-      <h4>💡 Haltung & Trainingstipps</h4>
+      <h4>💡 Haltung &amp; Trainingstipps</h4>
       <ul>
-        <li><strong>Kopf ruhig halten:</strong> Kinn in die Hände stützen. Nur die Augen wandern an die Ränder!</li>
-        <li><strong>Empfehlung:</strong> Max. 15–20 Minuten pro Session. Bei Ermüdung schaltet das Gehirn ab.</li>
+        <li><strong>Kopf ruhig halten:</strong> Kinn in die Hände stützen. Nur die Augen wandern an die Ränder.</li>
+        <li><strong>Empfehlung:</strong> Ca. 10–15 Minuten pro Session. Bei Ermüdung pausieren.</li>
       </ul>
     </div>
   </div>
 
-  <!-- Spielfeld-Bereich -->
   <div id="game-container">
-    
-    <div id="timer-warning">⚠️ 15 Minuten Trainingszeit erreicht! Zeit für eine kurze Pause für die Augen.</div>
 
-    <!-- Oberes Dashboard mit Vorschau und Scores -->
+    <div id="timer-warning">
+      <span>⚠️ 15 Minuten aktive Trainingszeit erreicht – kurze Pause für die Augen empfohlen.</span>
+      <button type="button" id="dismiss-timer-btn">OK</button>
+    </div>
+
     <div id="top-dashboard">
       <div class="dashboard-item">
         <span class="dashboard-label">Score</span>
         <span id="score" style="color: #00FFFF; font-size: 1.4em;">00000</span>
       </div>
-
       <div class="dashboard-item">
         <span class="dashboard-label">Next</span>
         <canvas id="upcoming" width="80" height="80"></canvas>
       </div>
-
       <div class="dashboard-item">
         <span class="dashboard-label">Rows</span>
         <span id="rows" style="color: #00FFFF; font-size: 1.4em;">0</span>
       </div>
+      <div class="dashboard-item">
+        <span class="dashboard-label">Session</span>
+        <span id="session-time">0:00</span>
+      </div>
     </div>
 
-    <div id="start-msg" style="margin-bottom: 10px;"><strong>Drücke LEERTASTE oder 'Start'</strong></div>
-    <canvas id="canvas"></canvas>
+    <div id="start-msg" style="margin-bottom: 10px;"><strong>Drücke LEERTASTE oder „Start“</strong></div>
 
-    <!-- Footer Links -->
+    <div id="canvas-wrap">
+      <canvas id="canvas"></canvas>
+      <div id="pause-overlay">PAUSE</div>
+    </div>
+
+    <div id="touch-controls">
+      <button type="button" class="touch-btn" data-action="left">◀</button>
+      <button type="button" class="touch-btn" data-action="rotate">↻</button>
+      <button type="button" class="touch-btn" data-action="right">▶</button>
+      <button type="button" class="touch-btn" data-action="down">▼</button>
+      <button type="button" class="touch-btn" data-action="pause">P</button>
+    </div>
+
     <footer class="legal-footer">
-      <a href="javascript:void(0)" id="open-disclaimer">Medizinischer Hinweis</a> | 
+      <a href="javascript:void(0)" id="open-disclaimer">Medizinischer Hinweis</a> |
       <a href="javascript:void(0)" id="open-impressum">Impressum</a>
     </footer>
 
-    <!-- Modal Disclaimer -->
     <div id="modal-disclaimer" class="modal">
       <div class="modal-content">
         <span class="close-modal">&times;</span>
@@ -333,7 +402,6 @@
       </div>
     </div>
 
-    <!-- Modal Impressum -->
     <div id="modal-impressum" class="modal">
       <div class="modal-content">
         <span class="close-modal">&times;</span>
@@ -350,20 +418,19 @@
     </div>
 
   </div>
-
 </div>
 
 <script>
+(function () {
   function get(id) { return document.getElementById(id); }
   function html(id, text) { get(id).innerHTML = text; }
-
   function timestamp() { return new Date().getTime(); }
-  function random(min, max) { return (min + (Math.random() * (max - min))); }
+  function random(min, max) { return min + (Math.random() * (max - min)); }
 
   if (!window.requestAnimationFrame) {
-    window.requestAnimationFrame = window.webkitRequestAnimationFrame || 
-                                   window.mozRequestAnimationFrame    || 
-                                   function(callback) { window.setTimeout(callback, 1000/60); };
+    window.requestAnimationFrame = window.webkitRequestAnimationFrame ||
+      window.mozRequestAnimationFrame ||
+      function (callback) { window.setTimeout(callback, 1000 / 60); };
   }
 
   var KEY = { ESC: 27, SPACE: 32, LEFT: 37, UP: 38, RIGHT: 39, DOWN: 40, P: 80 },
@@ -373,33 +440,40 @@
       speed = { start: 0.6, decrement: 0.005, min: 0.1 },
       nx = 32, ny = 18, nu = 5, blockSize = 25;
 
-  var dx, dy, blocks, actions, playing = false, paused = false, dt, current, next, score, vscore, rows, step;
-  var sessionStartTime = null, timerInterval = null;
+  var dx, dy, blocks, actions, playing = false, paused = false, dt,
+      current, next, score, vscore, rows, step;
 
-  var blockColors = { falling: "#FF0000", set: "#00FFFF" };
+  // Session timer: nur aktive Spielzeit (ohne Pause)
+  var activeMs = 0;
+  var activeSegmentStart = null;
+  var timerInterval = null;
+  var timerWarned = false;
+  var SESSION_LIMIT_MS = 15 * 60 * 1000;
+
+  var blockColors = { falling: '#FF0000', set: '#00FFFF' };
 
   var types = [
-    { id: 'i', size: 4, blocks: [0x0F00, 0x2222, 0x00F0, 0x4444]},
-    { id: 'j', size: 3, blocks: [0x44C0, 0x8E00, 0x6440, 0x0E20]},
-    { id: 'l', size: 3, blocks: [0x4460, 0x0E80, 0xC440, 0x2E00]},
-    { id: 'o', size: 2, blocks: [0xCC00, 0xCC00, 0xCC00, 0xCC00]},
-    { id: 's', size: 3, blocks: [0x06C0, 0x8C40, 0x6C00, 0x4620]},
-    { id: 't', size: 3, blocks: [0x0E40, 0x4C40, 0x4E00, 0x4640]},
-    { id: 'z', size: 3, blocks: [0x0C60, 0x4C80, 0xC600, 0x2640]}
+    { id: 'i', size: 4, blocks: [0x0F00, 0x2222, 0x00F0, 0x4444] },
+    { id: 'j', size: 3, blocks: [0x44C0, 0x8E00, 0x6440, 0x0E20] },
+    { id: 'l', size: 3, blocks: [0x4460, 0x0E80, 0xC440, 0x2E00] },
+    { id: 'o', size: 2, blocks: [0xCC00, 0xCC00, 0xCC00, 0xCC00] },
+    { id: 's', size: 3, blocks: [0x06C0, 0x8C40, 0x6C00, 0x4620] },
+    { id: 't', size: 3, blocks: [0x0E40, 0x4C40, 0x4E00, 0x4640] },
+    { id: 'z', size: 3, blocks: [0x0C60, 0x4C80, 0xC600, 0x2640] }
   ];
 
   function eachblock(type, x, y, dir, fn) {
-    var bit, row = 0, col = 0, blocks = type.blocks[dir];
-    for(bit = 0x8000 ; bit > 0 ; bit = bit >> 1) {
-      if (blocks & bit) { fn(x + col, y + row); }
+    var bit, row = 0, col = 0, bl = type.blocks[dir];
+    for (bit = 0x8000; bit > 0; bit = bit >> 1) {
+      if (bl & bit) { fn(x + col, y + row); }
       if (++col === 4) { col = 0; ++row; }
     }
   }
 
   function occupied(type, x, y, dir) {
     var result = false;
-    eachblock(type, x, y, dir, function(x, y) {
-      if ((x < 0) || (x >= nx) || (y < 0) || (y >= ny) || getBlock(x,y))
+    eachblock(type, x, y, dir, function (x, y) {
+      if ((x < 0) || (x >= nx) || (y < 0) || (y >= ny) || getBlock(x, y))
         result = true;
     });
     return result;
@@ -409,38 +483,120 @@
 
   var pieces = [];
   function randomPiece() {
-    if (pieces.length == 0) pieces = [0,0,0,0,1,1,1,1,2,2,2,2,3,3,3,3,4,4,4,4,5,5,5,5,6,6,6,6];
-    var type = types[pieces.splice(Math.floor(random(0, pieces.length)), 1)[0]];
+    if (pieces.length === 0) {
+      pieces = [0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 6, 6];
+    }
+    // Sicherer Index: 0 .. length-1
+    var idx = Math.floor(random(0, pieces.length));
+    if (idx >= pieces.length) idx = pieces.length - 1;
+    var type = types[pieces.splice(idx, 1)[0]];
     return { type: type, dir: DIR.UP, x: Math.round(random(0, nx - type.size)), y: 0 };
+  }
+
+  function formatTime(ms) {
+    var s = Math.floor(ms / 1000);
+    var m = Math.floor(s / 60);
+    s = s % 60;
+    return m + ':' + (s < 10 ? '0' : '') + s;
+  }
+
+  function getActiveMs() {
+    var total = activeMs;
+    if (activeSegmentStart !== null && playing && !paused) {
+      total += timestamp() - activeSegmentStart;
+    }
+    return total;
+  }
+
+  function startActiveSegment() {
+    if (activeSegmentStart === null && playing && !paused) {
+      activeSegmentStart = timestamp();
+    }
+  }
+
+  function stopActiveSegment() {
+    if (activeSegmentStart !== null) {
+      activeMs += timestamp() - activeSegmentStart;
+      activeSegmentStart = null;
+    }
+  }
+
+  function updateSessionDisplay() {
+    var ms = getActiveMs();
+    html('session-time', formatTime(ms));
+    if (ms >= SESSION_LIMIT_MS && !timerWarned) {
+      timerWarned = true;
+      get('timer-warning').classList.add('visible');
+    }
+  }
+
+  function resetSessionTimer() {
+    stopActiveSegment();
+    activeMs = 0;
+    timerWarned = false;
+    get('timer-warning').classList.remove('visible');
+    updateSessionDisplay();
+    if (playing && !paused) startActiveSegment();
   }
 
   function run() {
     addEvents();
+    showTouchIfNeeded();
     applySettings();
-    var last = now = timestamp();
+    var last = timestamp();
     function frame() {
-      now = timestamp();
+      var now = timestamp();
       if (playing && !paused) {
         update(Math.min(1, (now - last) / 1000.0));
       }
       draw();
       last = now;
-      requestAnimationFrame(frame, canvas);
+      requestAnimationFrame(frame);
     }
     reset();
     frame();
   }
 
+  function showTouchIfNeeded() {
+    var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+    var narrow = window.innerWidth < 700;
+    if (coarse || narrow) {
+      get('touch-controls').classList.add('visible');
+    }
+  }
+
   function addEvents() {
     document.addEventListener('keydown', keydown, false);
-    get('toggle-settings-btn').addEventListener('click', function() {
+    get('toggle-settings-btn').addEventListener('click', function () {
       get('controls-panel').classList.toggle('collapsed');
     });
     get('flip-btn').addEventListener('click', flipColors);
     get('apply-btn').addEventListener('click', applySettings);
     get('play-btn').addEventListener('click', play);
     get('pause-btn').addEventListener('click', togglePause);
+    get('reset-timer-btn').addEventListener('click', resetSessionTimer);
+    get('dismiss-timer-btn').addEventListener('click', function () {
+      get('timer-warning').classList.remove('visible');
+    });
+
+    // Touch controls
+    var touch = get('touch-controls');
+    touch.addEventListener('click', function (e) {
+      var btn = e.target.closest('[data-action]');
+      if (!btn) return;
+      var a = btn.getAttribute('data-action');
+      if (a === 'pause') { togglePause(); return; }
+      if (!playing || paused) return;
+      if (a === 'left') actions.push(DIR.LEFT);
+      else if (a === 'right') actions.push(DIR.RIGHT);
+      else if (a === 'rotate') rotate();
+      else if (a === 'down') drop();
+    });
+
     setupModals();
+
+    if (timerInterval) clearInterval(timerInterval);
+    timerInterval = setInterval(updateSessionDisplay, 1000);
   }
 
   function flipColors() {
@@ -456,17 +612,33 @@
   function togglePause() {
     if (!playing) return;
     paused = !paused;
-    get('pause-btn').innerText = paused ? "Weiter (Taste P)" : "Pause (Taste P)";
-    get('start-msg').style.display = paused ? 'block' : 'none';
-    if (paused) { html('start-msg', '<strong>PAUSE - Augen entspannen</strong>'); }
+    get('pause-btn').innerText = paused ? 'Weiter (P / Leertaste)' : 'Pause (P / Leertaste)';
+    get('pause-overlay').classList.toggle('visible', paused);
+    if (paused) {
+      stopActiveSegment();
+      get('start-msg').style.display = 'block';
+      html('start-msg', '<strong>PAUSE – Augen entspannen (P / Leertaste zum Weiter)</strong>');
+    } else {
+      get('start-msg').style.display = 'none';
+      startActiveSegment();
+    }
+    invalidate();
   }
 
   function applySettings() {
-    nx = parseInt(get('grid-nx').value) || 32;
-    ny = parseInt(get('grid-ny').value) || 18;
-    blockSize = parseInt(get('block-size').value) || 25;
+    nx = parseInt(get('grid-nx').value, 10) || 32;
+    ny = parseInt(get('grid-ny').value, 10) || 18;
+    blockSize = parseInt(get('block-size').value, 10) || 25;
     speed.start = parseFloat(get('start-speed').value) || 0.6;
-    
+
+    nx = Math.min(80, Math.max(8, nx));
+    ny = Math.min(50, Math.max(10, ny));
+    blockSize = Math.min(60, Math.max(10, blockSize));
+
+    get('grid-nx').value = nx;
+    get('grid-ny').value = ny;
+    get('block-size').value = blockSize;
+
     blockColors.falling = get('color-falling').value;
     blockColors.set = get('color-set').value;
 
@@ -479,71 +651,96 @@
     ucanvas.width = nu * uBlockSize;
     ucanvas.height = nu * uBlockSize;
 
+    // Einstellungen übernehmen beendet laufendes Spiel (wie zuvor)
+    if (playing) {
+      stopActiveSegment();
+      playing = false;
+      paused = false;
+      get('pause-overlay').classList.remove('visible');
+      get('pause-btn').innerText = 'Pause (P / Leertaste)';
+      get('start-msg').style.display = 'block';
+      html('start-msg', '<strong>Einstellungen übernommen – LEERTASTE oder „Start“</strong>');
+    }
     reset();
   }
 
   function keydown(ev) {
     var handled = false;
-    if (ev.keyCode == KEY.P) {
-      togglePause();
-      handled = true;
+
+    if (ev.keyCode === KEY.P) {
+      if (playing) {
+        togglePause();
+        handled = true;
+      }
+    } else if (ev.keyCode === KEY.SPACE) {
+      // Space: Start wenn nicht am Spielen, sonst Pause/Weiter
+      if (!playing) {
+        play();
+        handled = true;
+      } else {
+        togglePause();
+        handled = true;
+      }
     } else if (playing && !paused) {
-      switch(ev.keyCode) {
+      switch (ev.keyCode) {
         case KEY.LEFT:  actions.push(DIR.LEFT);  handled = true; break;
         case KEY.RIGHT: actions.push(DIR.RIGHT); handled = true; break;
         case KEY.UP:    rotate();                handled = true; break;
         case KEY.DOWN:  drop();                  handled = true; break;
         case KEY.ESC:   lose();                  handled = true; break;
       }
-    } else if (ev.keyCode == KEY.SPACE && !paused) {
-      play();
-      handled = true;
     }
+
     if (handled) ev.preventDefault();
   }
 
-  function startSessionTimer() {
-    if (!sessionStartTime) {
-      sessionStartTime = timestamp();
-      if (timerInterval) clearInterval(timerInterval);
-      timerInterval = setInterval(function() {
-        var elapsed = (timestamp() - sessionStartTime) / 1000 / 60;
-        if (elapsed >= 15) {
-          get('timer-warning').style.display = 'block';
-        }
-      }, 30000);
-    }
-  }
-
-  function play() { 
-    if (get('auto-swap').checked && playing === false) {
+  function play() {
+    // Auto-Swap nur beim Start eines neuen Spiels (nicht beim Unpause)
+    if (get('auto-swap').checked) {
       flipColors();
     }
-    get('start-msg').style.display = 'none'; 
-    reset(); 
-    playing = true; 
+    get('start-msg').style.display = 'none';
+    get('pause-overlay').classList.remove('visible');
+    reset();
+    playing = true;
     paused = false;
-    get('pause-btn').innerText = "Pause (Taste P)";
-    startSessionTimer();
+    get('pause-btn').innerText = 'Pause (P / Leertaste)';
+    // Neues Spiel = neue Session-Zählung optional? Hier: Timer läuft weiter über Sessions.
+    // Wer neu zählen will: resetSessionTimer() hier aufrufen.
+    startActiveSegment();
+    updateSessionDisplay();
   }
 
-  function lose() { 
-    get('start-msg').style.display = 'block'; 
-    html('start-msg', '<strong>GAME OVER - LEERTASTE für neues Spiel</strong>');
-    playing = false; 
+  function lose() {
+    stopActiveSegment();
+    get('start-msg').style.display = 'block';
+    html('start-msg', '<strong>GAME OVER – LEERTASTE für neues Spiel</strong>');
+    get('pause-overlay').classList.remove('visible');
+    playing = false;
+    paused = false;
+    get('pause-btn').innerText = 'Pause (P / Leertaste)';
+    invalidate();
   }
 
   function setVisualScore(n) { vscore = n || score; invalidateScore(); }
   function setScore(n)       { score = n; setVisualScore(n); }
   function addScore(n)       { score = score + n; }
-  function setRows(n)        { rows = n; step = Math.max(speed.min, speed.start - (speed.decrement*rows)); invalidateRows(); }
+  function setRows(n) {
+    rows = n;
+    step = Math.max(speed.min, speed.start - (speed.decrement * rows));
+    invalidateRows();
+  }
   function addRows(n)        { setRows(rows + n); }
-  function getBlock(x,y)     { return (blocks && blocks[x] ? blocks[x][y] : null); }
-  function setBlock(x,y,type){ blocks[x] = blocks[x] || []; blocks[x][y] = type; invalidate(); }
+  function getBlock(x, y)    { return (blocks && blocks[x] ? blocks[x][y] : null); }
+  function setBlock(x, y, type) {
+    blocks[x] = blocks[x] || [];
+    blocks[x][y] = type;
+    invalidate();
+  }
   function clearBlocks()     { blocks = []; invalidate(); }
   function clearActions()    { actions = []; }
-  function setCurrentPiece(p){ current = p || randomPiece(); invalidate(); }
-  function setNextPiece(p)   { next = p || randomPiece(); invalidateNext(); }
+  function setCurrentPiece(p) { current = p || randomPiece(); invalidate(); }
+  function setNextPiece(p)    { next = p || randomPiece(); invalidateNext(); }
 
   function reset() {
     dt = 0;
@@ -568,7 +765,7 @@
   }
 
   function handle(action) {
-    switch(action) {
+    switch (action) {
       case DIR.LEFT:  move(DIR.LEFT);  break;
       case DIR.RIGHT: move(DIR.RIGHT); break;
       case DIR.UP:    rotate();        break;
@@ -578,21 +775,25 @@
 
   function move(dir) {
     var x = current.x, y = current.y;
-    switch(dir) {
+    switch (dir) {
       case DIR.RIGHT: x = x + 1; break;
       case DIR.LEFT:  x = x - 1; break;
       case DIR.DOWN:  y = y + 1; break;
     }
     if (unoccupied(current.type, x, y, current.dir)) {
-      current.x = x; current.y = y; invalidate(); return true;
+      current.x = x;
+      current.y = y;
+      invalidate();
+      return true;
     }
     return false;
   }
 
   function rotate() {
-    var newdir = (current.dir == DIR.MAX ? DIR.MIN : current.dir + 1);
+    var newdir = (current.dir === DIR.MAX ? DIR.MIN : current.dir + 1);
     if (unoccupied(current.type, current.x, current.y, newdir)) {
-      current.dir = newdir; invalidate();
+      current.dir = newdir;
+      invalidate();
     }
   }
 
@@ -604,21 +805,23 @@
       setCurrentPiece(next);
       setNextPiece(randomPiece());
       clearActions();
-      if (occupied(current.type, current.x, current.y, current.dir)) { lose(); }
+      if (occupied(current.type, current.x, current.y, current.dir)) {
+        lose();
+      }
     }
   }
 
   function dropPiece() {
-    eachblock(current.type, current.x, current.y, current.dir, function(x, y) {
+    eachblock(current.type, current.x, current.y, current.dir, function (x, y) {
       setBlock(x, y, current.type);
     });
   }
 
   function removeLines() {
     var x, y, complete, n = 0;
-    for(y = ny - 1 ; y >= 0 ; --y) {
+    for (y = ny - 1; y >= 0; --y) {
       complete = true;
-      for(x = 0 ; x < nx ; ++x) {
+      for (x = 0; x < nx; ++x) {
         if (!getBlock(x, y)) complete = false;
       }
       if (complete) {
@@ -629,23 +832,24 @@
     }
     if (n > 0) {
       addRows(n);
-      addScore(100*Math.pow(2,n-1));
+      addScore(100 * Math.pow(2, n - 1));
     }
   }
 
   function removeLine(n) {
     var x, y;
-    for(y = n ; y >= 0 ; --y) {
-      for(x = 0 ; x < nx ; ++x)
-        setBlock(x, y, (y == 0) ? null : getBlock(x, y-1));
+    for (y = n; y >= 0; --y) {
+      for (x = 0; x < nx; ++x) {
+        setBlock(x, y, (y === 0) ? null : getBlock(x, y - 1));
+      }
     }
   }
 
   var invalid = {};
   function invalidate()      { invalid.court = true; }
-  function invalidateNext()  { invalid.next  = true; }
+  function invalidateNext()  { invalid.next = true; }
   function invalidateScore() { invalid.score = true; }
-  function invalidateRows()  { invalid.rows  = true; }
+  function invalidateRows()  { invalid.rows = true; }
 
   function draw() {
     drawCourt();
@@ -655,39 +859,46 @@
   }
 
   function drawCourt() {
-    if (invalid.court) {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      if (playing && !paused) drawPiece(ctx, current.type, current.x, current.y, current.dir);
-      var x, y, block;
-      for(y = 0 ; y < ny ; y++) {
-        for (x = 0 ; x < nx ; x++) {
-          if (block = getBlock(x,y)) drawBlock(ctx, x, y, blockColors.set);
+    if (!invalid.court) return;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Liegende Steine
+    var x, y, block;
+    for (y = 0; y < ny; y++) {
+      for (x = 0; x < nx; x++) {
+        if ((block = getBlock(x, y))) {
+          drawBlock(ctx, x, y, blockColors.set);
         }
       }
-      ctx.strokeStyle = '#333';
-      ctx.strokeRect(0, 0, canvas.width, canvas.height);
-      invalid.court = false;
     }
+
+    // Fallender Stein auch in Pause sichtbar
+    if (playing && current) {
+      drawPiece(ctx, current.type, current.x, current.y, current.dir);
+    }
+
+    ctx.strokeStyle = '#333';
+    ctx.strokeRect(0, 0, canvas.width, canvas.height);
+    invalid.court = false;
   }
 
   function drawNext() {
-    if (invalid.next) {
-      var padding = (nu - next.type.size) / 2;
-      var uBlockSize = ucanvas.width / nu;
-      uctx.clearRect(0, 0, ucanvas.width, ucanvas.height);
-      eachblock(next.type, padding, padding, next.dir, function(x, y) {
-        uctx.fillStyle = blockColors.falling;
-        uctx.fillRect(x*uBlockSize, y*uBlockSize, uBlockSize, uBlockSize);
-        uctx.strokeStyle = '#000';
-        uctx.strokeRect(x*uBlockSize, y*uBlockSize, uBlockSize, uBlockSize);
-      });
-      invalid.next = false;
-    }
+    if (!invalid.next || !next) return;
+    var padding = (nu - next.type.size) / 2;
+    var uBlockSize = ucanvas.width / nu;
+    uctx.clearRect(0, 0, ucanvas.width, ucanvas.height);
+    eachblock(next.type, padding, padding, next.dir, function (x, y) {
+      uctx.fillStyle = blockColors.falling;
+      uctx.fillRect(x * uBlockSize, y * uBlockSize, uBlockSize, uBlockSize);
+      uctx.strokeStyle = '#000';
+      uctx.strokeRect(x * uBlockSize, y * uBlockSize, uBlockSize, uBlockSize);
+    });
+    invalid.next = false;
   }
 
   function drawScore() {
     if (invalid.score) {
-      html('score', ("00000" + Math.floor(vscore)).slice(-5));
+      html('score', ('00000' + Math.floor(vscore)).slice(-5));
       invalid.score = false;
     }
   }
@@ -700,42 +911,42 @@
   }
 
   function drawPiece(ctx, type, x, y, dir) {
-    eachblock(type, x, y, dir, function(x, y) {
+    eachblock(type, x, y, dir, function (x, y) {
       drawBlock(ctx, x, y, blockColors.falling);
     });
   }
 
   function drawBlock(ctx, x, y, color) {
     ctx.fillStyle = color;
-    ctx.fillRect(x*dx, y*dy, dx, dy);
+    ctx.fillRect(x * dx, y * dy, dx, dy);
     ctx.strokeStyle = '#000000';
-    ctx.strokeRect(x*dx, y*dy, dx, dy);
+    ctx.strokeRect(x * dx, y * dy, dx, dy);
   }
 
-  // Modal Steuerung
   function setupModals() {
     var modalDisclaimer = get('modal-disclaimer');
     var modalImpressum = get('modal-impressum');
 
-    get('open-disclaimer').onclick = function() { modalDisclaimer.style.display = "block"; };
-    get('open-impressum').onclick = function() { modalImpressum.style.display = "block"; };
+    get('open-disclaimer').onclick = function () { modalDisclaimer.style.display = 'block'; };
+    get('open-impressum').onclick = function () { modalImpressum.style.display = 'block'; };
 
     var closeBtns = document.getElementsByClassName('close-modal');
     for (var i = 0; i < closeBtns.length; i++) {
-      closeBtns[i].onclick = function() {
-        modalDisclaimer.style.display = "none";
-        modalImpressum.style.display = "none";
+      closeBtns[i].onclick = function () {
+        modalDisclaimer.style.display = 'none';
+        modalImpressum.style.display = 'none';
       };
     }
 
-    window.onclick = function(event) {
-      if (event.target == modalDisclaimer) modalDisclaimer.style.display = "none";
-      if (event.target == modalImpressum) modalImpressum.style.display = "none";
+    window.onclick = function (event) {
+      if (event.target === modalDisclaimer) modalDisclaimer.style.display = 'none';
+      if (event.target === modalImpressum) modalImpressum.style.display = 'none';
     };
   }
 
   run();
+})();
 </script>
 
-</body> 
+</body>
 </html>

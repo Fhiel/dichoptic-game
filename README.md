@@ -29,7 +29,8 @@ Eine erweiterte HTML5-Tetris-Anwendung für **dichoptisches Seh- und Fusionstrai
 * **Pfeiltaste Links / Rechts:** Stein nach links / rechts bewegen
 * **Pfeiltaste Oben:** Stein drehen
 * **Pfeiltaste Unten:** Stein schneller fallen lassen
-* **LEERTASTE:** Spiel starten / pausieren
+* **LEERTASTE:** Starten bzw. Pause/Weiter
+* **P:** Pause/Weiter
 * **ESC:** Spiel beenden
 
 ---
