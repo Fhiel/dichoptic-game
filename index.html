@@ -62,18 +62,17 @@
     }
 
     #top-dashboard {
+      #top-dashboard {
       display: flex;
       align-items: center;
       justify-content: space-between;
       width: 100%;
       max-width: 900px;
-      margin-bottom: 10px;
+      margin-bottom: 5px;   /* Vorher 10px: Verringert Abstand zum Spielfeld */
       background: #1E1E1E;
-      padding: 10px 20px;
+      padding: 4px 15px;    /* Vorher 10px 20px: Verringert die Innenhöhe deutlich */
       border-radius: 8px;
       border: 1px solid #333;
-      flex-wrap: wrap;
-      gap: 8px;
     }
     .dashboard-item {
       display: flex;
@@ -361,7 +360,7 @@
       </div>
       <div class="dashboard-item">
         <span class="dashboard-label">Next</span>
-        <canvas id="upcoming" width="80" height="80"></canvas>
+        <canvas id="upcoming" width="50" height="50"></canvas>
       </div>
       <div class="dashboard-item">
         <span class="dashboard-label">Rows</span>
@@ -647,7 +646,7 @@
     dx = blockSize;
     dy = blockSize;
 
-    var uBlockSize = 15;
+    var uBlockSize = 10;
     ucanvas.width = nu * uBlockSize;
     ucanvas.height = nu * uBlockSize;
 
