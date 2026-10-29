@@ -9,11 +9,12 @@ Eine erweiterte HTML5-Tetris-Anwendung für **dichoptisches Seh- und Fusionstrai
 
 ## Features & Therapie-Funktionen
 
-* **Dichoptische Kanaltrennung:** Fällende Steine und liegende Blöcke werden in unterschiedlichen Farben gerendert. In Kombination mit einer Anaglyphenbrille (Rot/Cyan) wird jedes Auge gezwungen, aktiv am Spielgeschehen teilzunehmen.
-* **Widescreen & Peripherie-Training:** Das Spielfeld lässt sich in den Einstellungen auf bis zu 80 Spalten erweitern (16:9 / Breitbild). Das erzwingt Sakkaden und Blicksprünge an die äußeren Bildschirmränder zur Erweiterung des Blickfelds.
-* **Farben & Kontrast kalibrierbar:** Live-Farbwähler zur exakten Abstimmung auf die verwendeten Brillenfilter und Display-Eigenschaften.
-* **Einklappbares Settings-Panel:** Maximale Ausnutzung der Bildschirmbreite für Monitore und Tablets.
-* **Anleitung integriert:** Schritt-für-Schritt-Erklärung zur Brillen-Kalibrierung direkt im Einstellungen-Bereich.
+* **Dichoptische Kanaltrennung:** Fällende Steine und bereits abgelegte Blöcke werden in unterschiedlichen Farben gerendert. Zusammen mit einer Anaglyphenbrille (z. B. Rot/Cyan) wird das Gehirn gezwungen, die Signale beider Augen simultan im visuellen Kortex zu verarbeiten.
+* **Automatischer Farbwechsel:** Wechselt die Farbkanäle auf Wunsch bei jedem neuen Spielstart automatisch, um beide Augen gleichmäßig und symmetrisch zu beanspruchen.
+* **Peripherie- & Widescreen-Training:** Das Spielfeld lässt sich flexibel auf bis zu 80 Spalten (16:9 Breitbild) skalieren. Das erzwingt Sakkaden und Blickfeldauslenkungen bis an die äußeren Bildschirmränder.
+* **15-Minuten-Therapie-Timer:** Warnt automatisch vor Überermüdung der Augen, um das Zurückfallen in alte Unterdrückungsmuster (Suppression) zu verhindern.
+* **Pause-Modus & Kalibrierung:** Integrierte Pause-Funktion (`Taste P`) und Farbwähler zur präzisen Anpassung an Brille und Display-Eigenschaften.
+* **Optimiertes Layout:** Einklappbare Settings-Seitenleiste für maximale Bildschirmbreite sowie ein zentriertes Dashboard mit integrierter Vorschau („Nächster Stein“).
 
 ---
 
@@ -30,6 +31,14 @@ Eine erweiterte HTML5-Tetris-Anwendung für **dichoptisches Seh- und Fusionstrai
 ## Steuerung & Einstellungen
 
 Über den Button `⚙️ Settings Ein/Aus` lässt sich das Seitenmenü einblenden, um Rasterbreite (`nx`), Rasterhöhe (`ny`), Blockgröße, Fallgeschwindigkeit und Farben individuell anzupassen.
+
+---
+
+## Haltungstipps für das Training
+
+1. **Kopf fixieren:** Das Kinn fest in beide Hände stützen. Nur die Augen wandern zu den Rändern – das verhindert unbewusstes Mitschwenken des Kopfes.
+2. **Abstand halten:** Je näher am Monitor/Tablet gesessen wird, desto größer ist der therapeutische Reiz für die Randzonen der Netzhaut.
+3. **Session-Dauer:** Ideal sind 10 bis 15 Minuten pro Trainingseinheit.
 
 ---
 

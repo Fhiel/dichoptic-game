@@ -63,6 +63,7 @@
       align-items: center;
       justify-content: center;
       padding: 20px;
+      position: relative;
     }
 
     /* Top Dashboard inside Game Area */
@@ -152,7 +153,18 @@
       border-radius: 0 4px 4px 0;
     }
     .guide-box h4 { margin: 0 0 5px 0; color: #FFF; }
-    .guide-box ol { margin: 0; padding-left: 15px; }
+    .guide-box ol, .guide-box ul { margin: 0; padding-left: 15px; }
+
+    #timer-warning {
+      display: none;
+      background: #ff9800;
+      color: #000;
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-weight: bold;
+      font-size: 0.85em;
+      margin-bottom: 10px;
+    }
 
     #upcoming { background: #000; border: 1px solid #444; }
   </style>
@@ -180,6 +192,11 @@
 
     <button class="panel-btn" id="flip-btn">Farben Tauschen ⇄</button>
 
+    <div class="setting-group" style="margin-top: 10px;">
+      <label for="auto-swap" style="font-size: 0.8em;">Auto-Farbtausch bei jedem Spiel:</label>
+      <input type="checkbox" id="auto-swap" checked>
+    </div>
+
     <hr style="border-color: #444; margin: 15px 0;">
 
     <div class="setting-group">
@@ -203,26 +220,36 @@
     </div>
 
     <button class="panel-btn" id="apply-btn">Übernehmen</button>
-    <button class="panel-btn" id="play-btn" style="background-color: #4CAF50; margin-top: 10px;">Start / Restart</button>
+    <button class="panel-btn" id="pause-btn" style="background-color: #ff9800; margin-top: 5px;">Pause (Taste P)</button>
+    <button class="panel-btn" id="play-btn" style="background-color: #4CAF50; margin-top: 5px;">Start / Restart</button>
 
-    <!-- Anleitung zur Brillen-Kalibrierung -->
+    <!-- Anleitung zur Brillen-Kalibrierung & Haltung -->
     <div class="guide-box">
       <h4>👓 Brillen-Kalibrierung</h4>
       <ol>
         <li>Brille aufsetzen (z.B. Rot links, Cyan rechts).</li>
-        <li><strong>NUR durch das ROTE Glas schauen:</strong> Der fällende Stein muss gut sichtbar sein. Die liegenden Steine müssen <i>komplett unsichtbar/schwarz</i> sein.</li>
-        <li><strong>NUR durch das CYAN Glas schauen:</strong> Die liegenden Steine müssen gut sichtbar sein, der fällende Stein <i>unsichtbar/schwarz</i>.</li>
-        <li>Passt es nicht? Ändere den Farbwert oben oder passe die <strong>Display-Helligkeit</strong> des Geräts an.</li>
+        <li><strong>NUR durch ROTE Glas schauen:</strong> Fällender Stein sichtbar, liegende Steine <i>komplett unsichtbar</i>.</li>
+        <li><strong>NUR durch CYAN Glas schauen:</strong> Liegende Steine sichtbar, fällender Stein <i>unsichtbar</i>.</li>
+        <li>Passt es nicht? Farbe anpassen oder <strong>Display-Helligkeit</strong> ändern.</li>
       </ol>
+    </div>
+
+    <div class="guide-box" style="border-left-color: #4CAF50;">
+      <h4>💡 Haltung & Trainingstipps</h4>
+      <ul>
+        <li><strong>Kopf ruhig halten:</strong> Kinn in die Hände stützen. Nur die Augen wandern an die Ränder!</li>
+        <li><strong>Empfehlung:</strong> Max. 15–20 Minuten pro Session. Bei Ermüdung schaltet das Gehirn ab.</li>
+      </ul>
     </div>
   </div>
 
   <!-- Spielfeld-Bereich -->
   <div id="game-container">
     
+    <div id="timer-warning">⚠️ 15 Minuten Trainingszeit erreicht! Zeit für eine kurze Pause für die Augen.</div>
+
     <!-- Oberes Dashboard mit Vorschau und Scores -->
     <div id="top-dashboard">
-
       <div class="dashboard-item">
         <span class="dashboard-label">Score</span>
         <span id="score" style="color: #00FFFF; font-size: 1.4em;">00000</span>
@@ -258,14 +285,15 @@
                                    function(callback) { window.setTimeout(callback, 1000/60); };
   }
 
-  var KEY = { ESC: 27, SPACE: 32, LEFT: 37, UP: 38, RIGHT: 39, DOWN: 40 },
+  var KEY = { ESC: 27, SPACE: 32, LEFT: 37, UP: 38, RIGHT: 39, DOWN: 40, P: 80 },
       DIR = { UP: 0, RIGHT: 1, DOWN: 2, LEFT: 3, MIN: 0, MAX: 3 },
       canvas = get('canvas'), ctx = canvas.getContext('2d'),
       ucanvas = get('upcoming'), uctx = ucanvas.getContext('2d'),
       speed = { start: 0.6, decrement: 0.005, min: 0.1 },
       nx = 32, ny = 18, nu = 5, blockSize = 25;
 
-  var dx, dy, blocks, actions, playing, dt, current, next, score, vscore, rows, step;
+  var dx, dy, blocks, actions, playing, paused = false, dt, current, next, score, vscore, rows, step;
+  var sessionStartTime = null, timerInterval = null;
 
   var blockColors = { falling: "#FF0000", set: "#00FFFF" };
 
@@ -311,7 +339,9 @@
     var last = now = timestamp();
     function frame() {
       now = timestamp();
-      update(Math.min(1, (now - last) / 1000.0));
+      if (playing && !paused) {
+        update(Math.min(1, (now - last) / 1000.0));
+      }
       draw();
       last = now;
       requestAnimationFrame(frame, canvas);
@@ -325,17 +355,28 @@
     get('toggle-settings-btn').addEventListener('click', function() {
       get('controls-panel').classList.toggle('collapsed');
     });
-    get('flip-btn').addEventListener('click', function() {
-      var tmp = blockColors.falling;
-      blockColors.falling = blockColors.set;
-      blockColors.set = tmp;
-      get('color-falling').value = blockColors.falling;
-      get('color-set').value = blockColors.set;
-      invalidate();
-      invalidateNext();
-    });
+    get('flip-btn').addEventListener('click', flipColors);
     get('apply-btn').addEventListener('click', applySettings);
     get('play-btn').addEventListener('click', play);
+    get('pause-btn').addEventListener('click', togglePause);
+  }
+
+  function flipColors() {
+    var tmp = blockColors.falling;
+    blockColors.falling = blockColors.set;
+    blockColors.set = tmp;
+    get('color-falling').value = blockColors.falling;
+    get('color-set').value = blockColors.set;
+    invalidate();
+    invalidateNext();
+  }
+
+  function togglePause() {
+    if (!playing) return;
+    paused = !paused;
+    get('pause-btn').innerText = paused ? "Weiter (Taste P)" : "Pause (Taste P)";
+    get('start-msg').style.display = paused ? 'block' : 'none';
+    if (paused) { html('start-msg', '<strong>PAUSE - Augen entspannen</strong>'); }
   }
 
   function applySettings() {
@@ -352,7 +393,6 @@
     dx = blockSize;
     dy = blockSize;
 
-    // Upcoming Preview Canvas Skalierung
     var uBlockSize = 15;
     ucanvas.width = nu * uBlockSize;
     ucanvas.height = nu * uBlockSize;
@@ -362,7 +402,10 @@
 
   function keydown(ev) {
     var handled = false;
-    if (playing) {
+    if (ev.keyCode == KEY.P) {
+      togglePause();
+      handled = true;
+    } else if (playing && !paused) {
       switch(ev.keyCode) {
         case KEY.LEFT:  actions.push(DIR.LEFT);  handled = true; break;
         case KEY.RIGHT: actions.push(DIR.RIGHT); handled = true; break;
@@ -370,15 +413,43 @@
         case KEY.DOWN:  actions.push(DIR.DOWN);  handled = true; break;
         case KEY.ESC:   lose();                  handled = true; break;
       }
-    } else if (ev.keyCode == KEY.SPACE) {
+    } else if (ev.keyCode == KEY.SPACE && !paused) {
       play();
       handled = true;
     }
     if (handled) ev.preventDefault();
   }
 
-  function play() { get('start-msg').style.display = 'none'; reset(); playing = true; }
-  function lose() { get('start-msg').style.display = 'block'; playing = false; }
+  function startSessionTimer() {
+    if (!sessionStartTime) {
+      sessionStartTime = timestamp();
+      if (timerInterval) clearInterval(timerInterval);
+      timerInterval = setInterval(function() {
+        var elapsed = (timestamp() - sessionStartTime) / 1000 / 60;
+        if (elapsed >= 15) {
+          get('timer-warning').style.display = 'block';
+        }
+      }, 30000); // alle 30s prüfen
+    }
+  }
+
+  function play() { 
+    if (get('auto-swap').checked && playing === false) {
+      flipColors(); // Automatische Rotation der Farbkanäle bei Neustart
+    }
+    get('start-msg').style.display = 'none'; 
+    reset(); 
+    playing = true; 
+    paused = false;
+    get('pause-btn').innerText = "Pause (Taste P)";
+    startSessionTimer();
+  }
+
+  function lose() { 
+    get('start-msg').style.display = 'block'; 
+    html('start-msg', '<strong>GAME OVER - LEERTASTE für neues Spiel</strong>');
+    playing = false; 
+  }
 
   function setVisualScore(n) { vscore = n || score; invalidateScore(); }
   function setScore(n)       { score = n; setVisualScore(n); }
@@ -403,7 +474,7 @@
   }
 
   function update(idt) {
-    if (playing) {
+    if (playing && !paused) {
       if (vscore < score) setVisualScore(vscore + 1);
       handle(actions.shift());
       dt = dt + idt;
@@ -504,7 +575,7 @@
   function drawCourt() {
     if (invalid.court) {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      if (playing) drawPiece(ctx, current.type, current.x, current.y, current.dir);
+      if (playing && !paused) drawPiece(ctx, current.type, current.x, current.y, current.dir);
       var x, y, block;
       for(y = 0 ; y < ny ; y++) {
         for (x = 0 ; x < nx ; x++) {
