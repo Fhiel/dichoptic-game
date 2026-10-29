@@ -62,15 +62,16 @@
     }
 
     #top-dashboard {
-      #top-dashboard {
       display: flex;
+      flex-direction: row;        /* Erzwingt nebeneinander */
+      flex-wrap: nowrap;          /* Verhindert Umbrechen */
       align-items: center;
-      justify-content: space-between;
+      justify-content: space-around;
       width: 100%;
       max-width: 900px;
-      margin-bottom: 5px;   /* Vorher 10px: Verringert Abstand zum Spielfeld */
+      margin-bottom: 8px;
       background: #1E1E1E;
-      padding: 4px 15px;    /* Vorher 10px 20px: Verringert die Innenhöhe deutlich */
+      padding: 6px 15px;
       border-radius: 8px;
       border: 1px solid #333;
     }
@@ -79,6 +80,7 @@
       flex-direction: column;
       align-items: center;
       font-weight: bold;
+      min-width: 80px;
     }
     .dashboard-label {
       font-size: 0.8em;
